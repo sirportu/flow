@@ -8,9 +8,12 @@ import * as fcl from "@onflow/fcl"
 import * as types from "@onflow/types"
 
 export const Collection = ({ address }) => {
-    const [collection, setCollection] = useState(null);
+    let nftOnSaleAux = [];
+    const [collection, setCollection] = useState([]);
     const [nftOnSale, setNftOnSale] = useState([]);
+    const [myNftOnSale, setMyNftOnSale] = useState([]);
     const [nftDetail, setNftDetail] = useState([]);
+    const [render, setRender] = useState(false);
     const getNFTs = async () => {
         const result = await fcl.send([
             fcl.script(getNFTsScript),
@@ -24,6 +27,18 @@ export const Collection = ({ address }) => {
         ]).then(fcl.decode)
         setCollection(result);
         console.log(result);
+        getMyNFTsonSale();
+    }
+
+    const getMyNFTsonSale = async () => {
+        const result = await fcl.send([
+            fcl.script(readAccountSells),
+            fcl.args([
+                fcl.arg(address, types.Address),
+            ])
+        ]).then(fcl.decode)
+        setMyNftOnSale(result);
+        console.log(result);
     }
 
     const getNFTsonSale = async () => {
@@ -34,20 +49,33 @@ export const Collection = ({ address }) => {
             ])
         ]).then(fcl.decode)
         setNftOnSale(result);
+        nftOnSaleAux = result;
         console.log(result);
     }
 
-    const getDetailsOfOneNFTOnSale = async (id) => {
+    const getDetailsOfOneNFTOnSale = async (id, addressForSale) => {
         const result = await fcl.send([
             fcl.script(getDetails),
             fcl.args([
-                fcl.arg("0xdf202fd6391aaf5d", types.Address),
+                fcl.arg(addressForSale, types.Address),
                 fcl.arg(id, types.UInt64),
             ])
         ]).then(fcl.decode)
-        setNftDetail((prev) => ({
-            ...prev, result
-        }))
+        
+        if (addressForSale !== "0xdf202fd6391aaf5d") {
+            nftDetail.push(result);
+            if (nftDetail.length >= myNftOnSale.length) {
+                setRender(true);
+            }
+        } else {
+            if((new Date(result.expiry * 1000)) < (new Date())) {
+                nftOnSaleAux = nftOnSaleAux.filter(item => item != id);
+                if (nftDetail.length >= nftOnSale.length) {
+                    setNftOnSale(nftOnSaleAux);
+                }
+            }
+        }
+
         console.log("detalle del nft en venta", result);
     }
 
@@ -79,14 +107,29 @@ export const Collection = ({ address }) => {
     }, [address])
 
     useEffect(() => {
+        if (myNftOnSale.length)
+            myNftOnSale.forEach(nft => {
+                getDetailsOfOneNFTOnSale(nft, address);
+            })
+    }, [myNftOnSale]);
+
+    useEffect(() => {
         if (nftOnSale.length)
             nftOnSale.forEach(nft => {
-                getDetailsOfOneNFTOnSale(nft);
+                getDetailsOfOneNFTOnSale(nft, "0xdf202fd6391aaf5d");
             })
     }, [nftOnSale]);
 
+    const RenderSell = (nftId) => {
+        return { status: !nftDetail.find(f => f.nftID == nftId) }
+    }
+
     return (
-        <div>
+        <div style={{
+            overflow: "scroll", 
+            width: "100%", 
+            display: "grid" 
+        }}>
             <h3>
                 {address ? "My NFTS" : null}
             </h3>
@@ -96,9 +139,8 @@ export const Collection = ({ address }) => {
                 "margin-bottom": "20px",
             }}>
                 {
-                    collection && address && collection.length ? collection.map((nft) =>
-                    (<>
-                        <div style={{
+                    collection && address && collection.length ? collection.map((nft, index) =>
+                    (<div key={index} id={nft} style={{
                             "width": "250px",
                             "height": "250px",
                             "position": "relative",
@@ -113,26 +155,28 @@ export const Collection = ({ address }) => {
                                 "left": "0",
                             }}
                             >
-                                <button
-                                    onClick={() => SellNFT(nft)}
-                                    style={{
-                                        "width": "100%",
-                                        "color": "white",
-                                        "padding": "10px",
-                                        "cursor": "pointer",
-                                    }}> Sell NFT </button>
+                            { render && RenderSell(nft).status
+                                ? <button
+                                onClick={() => SellNFT(nft)}
+                                style={{
+                                    "width": "100%",
+                                    "color": "white",
+                                    "padding": "10px",
+                                    "cursor": "pointer",
+                                }}> Sell NFT ({nft}) </button>
+                                : null
+                            }
                             </div>
                         </div>
-
-                    </>)
+                        )
                     )
                         : null
                 }
             </div>
-            <button onClick={() => getNFTsonSale()}>
+            <button style={{"max-width": "100px", "margin-bottom": "20px"}} onClick={() => getNFTsonSale()}>
                 get nft on sale
             </button>
-            {/* <p> {nftOnSale.join(", ")} </p> */}
+            {<p> {nftOnSale.join(", ")} </p>}
 
         </div>
     )

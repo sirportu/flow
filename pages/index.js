@@ -1,15 +1,14 @@
 import { useState, useEffect } from 'react'
 import Head from 'next/head'
 import styles from '../styles/Home.module.css'
-import * as fcl from "@onflow/fcl"
-import * as types from "@onflow/types"
-
 import { Collection } from '../components/Collection'
 import { BuyNFT } from '../components/buyNFT'
-
 import { mintNFT } from '../cadence/transactions/mint_nft'
 import { setupAccount } from '../cadence/transactions/setup_account'
 import { setupCollection } from '../cadence/transactions/setup_collection'
+
+import * as fcl from "@onflow/fcl"
+import * as types from "@onflow/types"
 
 
 fcl.config()
@@ -18,8 +17,11 @@ fcl.config()
 
 export default function Home() {
   const [isConnected, setIsConnected] = useState(false)
-  const [user, setUser] = useState()
+  const [user, setUser] = useState(null)
   const login = () => {
+    if (fcl.currentUser()) {
+      logout();
+    }
     fcl.authenticate();
     setIsConnected(true);
   }
@@ -33,6 +35,11 @@ export default function Home() {
     fcl.currentUser().subscribe(setUser)
   }, [])
 
+  const getAddress = () => {
+    if (user && isConnected) {
+      return user?.addr;
+    }
+  }
 
   const mintNFTFunction = async () => {
     const transactionId = await fcl.send([
@@ -50,7 +57,7 @@ export default function Home() {
     ]).then(fcl.decode);
 
     console.log(transactionId);
-
+    
     return fcl.tx(transactionId).onceSealed();
   }
 
@@ -104,7 +111,7 @@ export default function Home() {
             gap: "10px"
           }}>
             <h2>User: </h2>
-            <p>{user.addr}</p>
+            <p>{user?.addr}</p>
           </div>
         )}
         <div style={{ display: "flex", gap: "10px", paddingTop: "5px" }}>
@@ -115,8 +122,11 @@ export default function Home() {
           <button disabled={!isConnected} onClick={() => mintNFTFunction()}>mintNFT</button>
         </div>
 
-        <div style={{ marginTop: "20px" }}>
-          <Collection address={user?.addr} />
+        <div style={{ margin: "auto", "max-width": "1600px" }}>
+          {user && isConnected
+                ? <Collection re address={getAddress()} />
+                : null
+          }
         </div>
         <div style={{ marginTop: "20px" }}>
           <BuyNFT />
