@@ -27,7 +27,6 @@ export const Collection = ({ address }) => {
         ]).then(fcl.decode)
         setCollection(result);
         console.log(result);
-        getMyNFTsonSale();
     }
 
     const getMyNFTsonSale = async () => {
@@ -99,12 +98,17 @@ export const Collection = ({ address }) => {
 
         return fcl.tx(transactionId).onceSealed();
     }
-
+ 
     useEffect(() => {
         if (address) {
             getNFTs();
         }
     }, [address])
+
+    useEffect(() => {
+        if (collection.length)
+            getMyNFTsonSale();
+    }, [collection])
 
     useEffect(() => {
         if (myNftOnSale.length)
@@ -155,7 +159,7 @@ export const Collection = ({ address }) => {
                                 "left": "0",
                             }}
                             >
-                            { render && RenderSell(nft).status
+                            { myNftOnSale.length == 0 || (render && RenderSell(nft).status)
                                 ? <button
                                 onClick={() => SellNFT(nft)}
                                 style={{
