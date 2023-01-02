@@ -44,7 +44,7 @@ export const Collection = ({ address }) => {
         const result = await fcl.send([
             fcl.script(readAccountSells),
             fcl.args([
-                fcl.arg("0xdf202fd6391aaf5d", types.Address),
+                fcl.arg(address, types.Address),
             ])
         ]).then(fcl.decode)
         setNftOnSale(result);
@@ -52,7 +52,7 @@ export const Collection = ({ address }) => {
         console.log(result);
     }
 
-    const getDetailsOfOneNFTOnSale = async (id, addressForSale) => {
+    const getDetailsOfOneNFTOnSale = async (id, addressForSale, my) => {
         const result = await fcl.send([
             fcl.script(getDetails),
             fcl.args([
@@ -61,7 +61,7 @@ export const Collection = ({ address }) => {
             ])
         ]).then(fcl.decode)
         
-        if (addressForSale !== "0xdf202fd6391aaf5d") {
+        if (my) {
             nftDetail.push(result);
             if (nftDetail.length >= myNftOnSale.length) {
                 setRender(true);
@@ -113,14 +113,14 @@ export const Collection = ({ address }) => {
     useEffect(() => {
         if (myNftOnSale.length)
             myNftOnSale.forEach(nft => {
-                getDetailsOfOneNFTOnSale(nft, address);
+                getDetailsOfOneNFTOnSale(nft, address, true);
             })
     }, [myNftOnSale]);
 
     useEffect(() => {
         if (nftOnSale.length)
             nftOnSale.forEach(nft => {
-                getDetailsOfOneNFTOnSale(nft, "0xdf202fd6391aaf5d");
+                getDetailsOfOneNFTOnSale(nft, address, false);
             })
     }, [nftOnSale]);
 

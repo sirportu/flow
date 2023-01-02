@@ -5,7 +5,7 @@ import * as fcl from "@onflow/fcl"
 import * as types from "@onflow/types"
 
 
-export const BuyNFT = () => {
+export const BuyNFT = ({ address }) => {
     const [id, setId] = useState(null);
 
     const cleanSales = async () => {
@@ -13,7 +13,7 @@ export const BuyNFT = () => {
         const cleanUp = await fcl.send([
             fcl.transaction(CleanUp),
             fcl.args([
-                fcl.arg("0xdf202fd6391aaf5d", types.Address),
+                fcl.arg(address, types.Address),
                 fcl.arg(id, types.UInt64),
             ]),
             fcl.payer(fcl.authz),
@@ -32,7 +32,7 @@ export const BuyNFT = () => {
             fcl.transaction(BuyItemFromMarketPlace),
             fcl.args([
                 fcl.arg(id, types.UInt64),
-                fcl.arg("0xdf202fd6391aaf5d", types.Address),
+                fcl.arg(address, types.Address),
                 fcl.arg("0x8c1a6715c11b4ea3", types.Optional(types.Address)),
             ]),
             fcl.payer(fcl.authz),

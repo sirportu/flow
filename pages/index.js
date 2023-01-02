@@ -129,7 +129,7 @@ export default function Home() {
           }
         </div>
         <div style={{ marginTop: "20px" }}>
-          <BuyNFT />
+          <BuyNFT re address={getAddress()} />
         </div>
       </main>
 
