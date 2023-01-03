@@ -104,7 +104,7 @@ export const Collection = ({ address }) => {
   }, [address]);
 
   useEffect(() => {
-    if (collection.length) getMyNFTsonSale();
+    if (collection.length) getNFTsonSale();
   }, [collection]);
 
   useEffect(() => {
