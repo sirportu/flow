@@ -20,7 +20,7 @@ export const Collection = ({ address }) => {
       .send([
         fcl.script(getNFTsScript),
         fcl.args([
-          fcl.arg(address, types.Address),
+          fcl.arg("0xc97017ed85e496bf", types.Address),
           fcl.arg(
             {
               domain: "public", // public | private | storage
