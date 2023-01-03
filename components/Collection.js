@@ -163,7 +163,7 @@ export const Collection = ({ address }) => {
                     left: "0",
                   }}
                 >
-                  {myNftOnSale.length == 0 ||
+                  {nftOnSale.length == 0 ||
                   (render && RenderSell(nft).status) ? (
                     <button
                       onClick={() => sellNFT(nft)}
