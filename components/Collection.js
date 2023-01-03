@@ -43,6 +43,7 @@ export const Collection = ({ address }) => {
       ])
       .then(fcl.decode);
     setNftOnSale(result);
+    setMyNftOnSale(result);
     nftOnSaleAux = result;
     console.log(result);
   };
