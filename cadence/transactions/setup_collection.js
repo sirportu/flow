@@ -7,7 +7,7 @@ transaction {
 
     prepare(signer: AuthAccount) {
         // Return early if the account already has a collection
-        if signer.borrow<&ExampleNFT.Collection>(from: PiratesOfTheMetaverse.CollectionStoragePath) != nil {
+        if signer.borrow<&PiratesOfTheMetaverse.Collection>(from: PiratesOfTheMetaverse.CollectionStoragePath) != nil {
             return
         }
 
@@ -18,7 +18,7 @@ transaction {
         signer.save(<-collection, to: PiratesOfTheMetaverse.CollectionStoragePath)
 
         // create a public capability for the collection
-        signer.link<&{NonFungibleToken.CollectionPublic, PiratesOfTheMetaverse.ExampleNFTCollectionPublic}>(
+        signer.link<&{NonFungibleToken.CollectionPublic, PiratesOfTheMetaverse.PiratesOfTheMetaverseCollectionPublic}>(
             PiratesOfTheMetaverse.CollectionPublicPath,
             target: PiratesOfTheMetaverse.CollectionStoragePath
         )
