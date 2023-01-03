@@ -1,92 +1,101 @@
-import { useState, useEffect } from 'react'
-import Head from 'next/head'
-import styles from '../styles/Home.module.css'
-import { Collection } from '../components/Collection'
-import { BuyNFT } from '../components/buyNFT'
-import { mintNFT } from '../cadence/transactions/mint_nft'
-import { setupAccount } from '../cadence/transactions/setup_account'
-import { setupCollection } from '../cadence/transactions/setup_collection'
+import Head from "next/head";
+import { useEffect, useState } from "react";
+import { mintNFT } from "../cadence/transactions/mint_nft";
+import { setupAccount } from "../cadence/transactions/setup_account";
+import { setupCollection } from "../cadence/transactions/setup_collection";
+import { BuyNFT } from "../components/buyNFT";
+import { Collection } from "../components/Collection";
+import styles from "../styles/Home.module.css";
 
-import * as fcl from "@onflow/fcl"
-import * as types from "@onflow/types"
+import * as fcl from "@onflow/fcl";
+import * as types from "@onflow/types";
 
-
-fcl.config()
+fcl
+  .config()
   .put("accessNode.api", "	https://rest-testnet.onflow.org")
-  .put("discovery.wallet", "https://fcl-discovery.onflow.org/testnet/authn")
+  .put("discovery.wallet", "https://fcl-discovery.onflow.org/testnet/authn");
 
 export default function Home() {
-  const [isConnected, setIsConnected] = useState(false)
-  const [user, setUser] = useState(null)
+  const [isConnected, setIsConnected] = useState(false);
+  const [user, setUser] = useState(null);
   const login = () => {
     if (fcl.currentUser()) {
       logout();
     }
     fcl.authenticate();
     setIsConnected(true);
-  }
+  };
   const logout = () => {
     fcl.unauthenticate();
     setIsConnected(false);
     setUser(null);
-  }
+  };
 
   useEffect(() => {
-    fcl.currentUser().subscribe(setUser)
-  }, [])
+    fcl.currentUser().subscribe(setUser);
+  }, []);
 
   const getAddress = () => {
     if (user && isConnected) {
       return user?.addr;
     }
-  }
+  };
 
   const mintNFTFunction = async () => {
-    const transactionId = await fcl.send([
-      fcl.transaction(mintNFT),
-      fcl.args([
-        fcl.arg(user.addr, types.Address),
-        fcl.arg("prueba NFT", types.String),
-        fcl.arg("nft de prueba para el marketplace", types.String),
-        fcl.arg("https://static.wikia.nocookie.net/onepiece/images/a/af/Monkey_D._Luffy_Anime_Dos_A%C3%B1os_Despu%C3%A9s_Infobox.png/revision/latest?cb=20200616015904&path-prefix=es", types.String),
-      ]),
-      fcl.payer(fcl.authz),
-      fcl.authorizations([fcl.authz]),
-      fcl.proposer(fcl.authz),
-      fcl.limit(9999)
-    ]).then(fcl.decode);
+    const transactionId = await fcl
+      .send([
+        fcl.transaction(mintNFT),
+        fcl.args([
+          fcl.arg(user.addr, types.Address),
+          fcl.arg("Test NFT", types.String),
+          fcl.arg("This is a test NFT", types.String),
+          fcl.arg(
+            "https://static.wikia.nocookie.net/onepiece/images/a/af/Monkey_D._Luffy_Anime_Dos_A%C3%B1os_Despu%C3%A9s_Infobox.png/revision/latest?cb=20200616015904&path-prefix=es",
+            types.String
+          ),
+        ]),
+        fcl.payer(fcl.authz),
+        fcl.authorizations([fcl.authz]),
+        fcl.proposer(fcl.authz),
+        fcl.limit(9999),
+      ])
+      .then(fcl.decode);
 
     console.log(transactionId);
-    
+
     return fcl.tx(transactionId).onceSealed();
-  }
+  };
 
   const setupAccountFunction = async () => {
-    const transactionId = await fcl.send([
-      fcl.transaction(setupAccount),
-      fcl.payer(fcl.authz),
-      fcl.authorizations([fcl.authz]),
-      fcl.proposer(fcl.authz),
-      fcl.limit(9999)
-    ]).then(fcl.decode);
+    const transactionId = await fcl
+      .send([
+        fcl.transaction(setupAccount),
+        fcl.payer(fcl.authz),
+        fcl.authorizations([fcl.authz]),
+        fcl.proposer(fcl.authz),
+        fcl.limit(9999),
+      ])
+      .then(fcl.decode);
 
     console.log(transactionId);
 
     return fcl.tx(transactionId).onceSealed();
-  }
+  };
   const setupCollectionFunction = async () => {
-    const transactionId = await fcl.send([
-      fcl.transaction(setupCollection),
-      fcl.payer(fcl.authz),
-      fcl.authorizations([fcl.authz]),
-      fcl.proposer(fcl.authz),
-      fcl.limit(9999)
-    ]).then(fcl.decode);
+    const transactionId = await fcl
+      .send([
+        fcl.transaction(setupCollection),
+        fcl.payer(fcl.authz),
+        fcl.authorizations([fcl.authz]),
+        fcl.proposer(fcl.authz),
+        fcl.limit(9999),
+      ])
+      .then(fcl.decode);
 
     console.log(transactionId);
 
     return fcl.tx(transactionId).onceSealed();
-  }
+  };
   //"https://qph.cf2.quoracdn.net/main-qimg-190bef3af6e815401e25f6a97c33df8b-lq",
   return (
     <div className={styles.container}>
@@ -99,40 +108,56 @@ export default function Home() {
       <main className={styles.main}>
         <h1>MarketPlace</h1>
         <div style={{ display: "flex", gap: "10px" }}>
-          <button disabled={isConnected} onClick={() => login()}>Login</button>
-          <button disabled={!isConnected} onClick={() => logout()}>Logout</button>
+          <button disabled={isConnected} onClick={() => login()}>
+            Login
+          </button>
+          <button disabled={!isConnected} onClick={() => logout()}>
+            Logout
+          </button>
         </div>
         {isConnected && (
-          <div style={{
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: "10px"
-          }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: "10px",
+            }}
+          >
             <h2>User: </h2>
             <p>{user?.addr}</p>
           </div>
         )}
         <div style={{ display: "flex", gap: "10px", paddingTop: "5px" }}>
-          <button disabled={!isConnected} onClick={() => setupAccountFunction()}>setupAccount</button>
-          <button disabled={!isConnected} onClick={() => setupCollectionFunction()}>setupCollection</button>
+          <button
+            disabled={!isConnected}
+            onClick={() => setupAccountFunction()}
+          >
+            setupAccount
+          </button>
+          <button
+            disabled={!isConnected}
+            onClick={() => setupCollectionFunction()}
+          >
+            setupCollection
+          </button>
         </div>
         <div style={{ display: "flex", gap: "10px", paddingTop: "20px" }}>
-          <button disabled={!isConnected} onClick={() => mintNFTFunction()}>mintNFT</button>
+          <button disabled={!isConnected} onClick={() => mintNFTFunction()}>
+            mintNFT
+          </button>
         </div>
 
         <div style={{ margin: "auto", "max-width": "1600px" }}>
-          {user && isConnected
-                ? <Collection re address={getAddress()} />
-                : null
-          }
+          {user && isConnected ? (
+            <Collection re address={getAddress()} />
+          ) : null}
         </div>
         <div style={{ marginTop: "20px" }}>
           <BuyNFT re address={getAddress()} />
         </div>
       </main>
-
     </div>
-  )
+  );
 }
