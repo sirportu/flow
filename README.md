@@ -126,7 +126,7 @@ const mintNFTFunction = async () => {
 };
 ```
 
-## Get User's NFT's
+## Get NFT's for address
 
 ```javascript
 import { getNFTsScript } from "../cadence/scripts/getNFTs";
@@ -153,7 +153,7 @@ const getNFTs = async () => {
 };
 ```
 
-## Get NFT's on sale for specific user
+## Get NFT's on sale for specific address
 
 ```javascript
 import { readAccountSells } from "../cadence/scripts/ReadAccountSells";

@@ -20,7 +20,7 @@ export const Collection = ({ address }) => {
       .send([
         fcl.script(getNFTsScript),
         fcl.args([
-          fcl.arg("0xc97017ed85e496bf", types.Address),
+          fcl.arg(address, types.Address),
           fcl.arg(
             {
               domain: "public", // public | private | storage
@@ -43,7 +43,6 @@ export const Collection = ({ address }) => {
       ])
       .then(fcl.decode);
     setNftOnSale(result);
-    setMyNftOnSale(result);
     nftOnSaleAux = result;
     console.log(result);
   };
@@ -105,7 +104,7 @@ export const Collection = ({ address }) => {
   }, [address]);
 
   useEffect(() => {
-    if (collection.length) getNFTsonSale();
+    if (collection.length) getMyNFTsonSale();
   }, [collection]);
 
   useEffect(() => {
@@ -134,7 +133,7 @@ export const Collection = ({ address }) => {
         display: "grid",
       }}
     >
-      <h3>{address ? "My NFTS" : null}</h3>
+      <h3>{address ? "Demo NFTs" : null}</h3>
       <div
         style={{
           display: "flex",

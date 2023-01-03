@@ -1,7 +1,7 @@
 export const getNFTsScript = `
 
 import NonFungibleToken from 0x631e88ae7f1d7c20
-import PiratesOfTheMetaverse from 0xc97017ed85e496bf
+import ExampleNFT from 0xdf202fd6391aaf5d
 
 ///
 pub fun main(address: Address, collectionPublicPath: PublicPath): [UInt64] {
