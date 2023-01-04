@@ -1,5 +1,3 @@
-import * as fcl from "@onflow/fcl";
-import * as types from "@onflow/types";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { getDetails } from "../cadence/scripts/getDetails";
@@ -7,11 +5,13 @@ import { getNFTsScript } from "../cadence/scripts/getNFTs";
 import { readAccountSells } from "../cadence/scripts/ReadAccountSells";
 import { sellItem } from "../cadence/transactions/sell_item";
 
-export const Collection = ({ address }) => {
+import * as fcl from "@onflow/fcl";
+import * as types from "@onflow/types";
+
+export const Collection = ({ address, timeStamp }) => {
   let nftOnSaleAux = [];
   const [collection, setCollection] = useState([]);
   const [nftOnSale, setNftOnSale] = useState([]);
-  const [myNftOnSale, setMyNftOnSale] = useState([]);
   const [nftDetail, setNftDetail] = useState([]);
   const [render, setRender] = useState(false);
 
@@ -31,6 +31,8 @@ export const Collection = ({ address }) => {
         ]),
       ])
       .then(fcl.decode);
+
+    setNftDetail([]);
     setCollection(result);
     console.log(result);
   };
@@ -47,7 +49,7 @@ export const Collection = ({ address }) => {
     console.log(result);
   };
 
-  const getDetailsOfOneNFTOnSale = async (id, userAddress, isMyNFTs) => {
+  const getDetailsOfOneNFTOnSale = async (id, userAddress) => {
     const result = await fcl
       .send([
         fcl.script(getDetails),
@@ -58,7 +60,15 @@ export const Collection = ({ address }) => {
       ])
       .then(fcl.decode);
 
-    if (isMyNFTs) {
+    if(!nftDetail.find(f => f.nftID == result.nftID)) {
+        nftDetail.push(result);
+    }
+    if (nftDetail.length >= nftOnSale.length) {
+        setRender(true);
+    } else {
+        setRender(false);
+    }
+    /*if (isMyNFTs) {
       nftDetail.push(result);
       if (nftDetail.length >= myNftOnSale.length) {
         setRender(true);
@@ -70,7 +80,7 @@ export const Collection = ({ address }) => {
           setNftOnSale(nftOnSaleAux);
         }
       }
-    }
+    }*/
 
     console.log("NFT details:", result);
   };
@@ -94,7 +104,8 @@ export const Collection = ({ address }) => {
 
     console.log(transactionId);
 
-    return fcl.tx(transactionId).onceSealed();
+    await fcl.tx(transactionId).onceSealed();
+    getNFTs();
   };
 
   useEffect(() => {
@@ -104,20 +115,19 @@ export const Collection = ({ address }) => {
   }, [address]);
 
   useEffect(() => {
+    if (address && timeStamp) {
+      getNFTs();
+    }
+  }, [timeStamp]);
+
+  useEffect(() => {
     if (collection.length) getNFTsonSale();
   }, [collection]);
 
   useEffect(() => {
-    if (myNftOnSale.length)
-      myNftOnSale.forEach((nft) => {
-        getDetailsOfOneNFTOnSale(nft, address, true);
-      });
-  }, [myNftOnSale]);
-
-  useEffect(() => {
     if (nftOnSale.length)
       nftOnSale.forEach((nft) => {
-        getDetailsOfOneNFTOnSale(nft, address, false);
+        getDetailsOfOneNFTOnSale(nft, address);
       });
   }, [nftOnSale]);
 
@@ -185,8 +195,7 @@ export const Collection = ({ address }) => {
       </div>
       <button
         style={{ "max-width": "100px", "margin-bottom": "20px" }}
-        onClick={() => getNFTsonSale()}
-      >
+        onClick={() => getNFTsonSale()}>
         get nft on sale
       </button>
       {<p> {nftOnSale.join(", ")} </p>}

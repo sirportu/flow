@@ -1,10 +1,11 @@
-import * as fcl from "@onflow/fcl";
-import * as types from "@onflow/types";
 import React, { useState } from "react";
 import { BuyItemFromMarketPlace } from "../cadence/transactions/buy_item";
 import { CleanUp } from "../cadence/transactions/cleanUp";
 
-export const BuyNFT = ({ address }) => {
+import * as fcl from "@onflow/fcl";
+import * as types from "@onflow/types";
+
+export const BuyNFT = ({ address, setTimeStamp }) => {
   const [id, setId] = useState(null);
 
   const cleanSales = async () => {
@@ -18,9 +19,10 @@ export const BuyNFT = ({ address }) => {
         fcl.limit(9999),
       ])
       .then(fcl.decode);
-    console.log("cleanup ", cleanUp);
 
-    return fcl.tx(cleanUp).onceSealed();
+    console.log("cleanup ", cleanUp);
+    await fcl.tx(cleanUp).onceSealed();
+    setTimeStamp(Date.now());
   };
 
   const buyNFTMarketPlace = async () => {
@@ -40,8 +42,8 @@ export const BuyNFT = ({ address }) => {
       .then(fcl.decode);
 
     console.log("NFT Bought", transactionId);
-    const sealed = fcl.tx(transactionId).onceSealed();
-    return sealed;
+    await fcl.tx(transactionId).onceSealed();
+    cleanSales();
   };
 
   const handleId = (e) => {
@@ -56,7 +58,6 @@ export const BuyNFT = ({ address }) => {
         {" "}
         Buy NFT Button{" "}
       </button>
-      <button onClick={() => cleanSales()}> CleanUP </button>
     </div>
   );
 };

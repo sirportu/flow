@@ -17,6 +17,8 @@ fcl
 
 export default function Home() {
   const [isConnected, setIsConnected] = useState(false);
+  const [userAddress, setUserAddress] = useState(null);
+  const [timeStamp, setTimeStamp] = useState(null);
   const [user, setUser] = useState(null);
   const login = () => {
     if (fcl.currentUser()) {
@@ -35,11 +37,11 @@ export default function Home() {
     fcl.currentUser().subscribe(setUser);
   }, []);
 
-  const getAddress = () => {
+  useEffect(() => {
     if (user && isConnected) {
-      return user?.addr;
+      setUserAddress(user?.addr);
     }
-  };
+  }, [user]);
 
   const mintNFTFunction = async () => {
     const transactionId = await fcl
@@ -63,7 +65,8 @@ export default function Home() {
 
     console.log(transactionId);
 
-    return fcl.tx(transactionId).onceSealed();
+    await fcl.tx(transactionId).onceSealed();
+    setTimeStamp(Date.now());
   };
 
   const setupAccountFunction = async () => {
@@ -96,6 +99,7 @@ export default function Home() {
 
     return fcl.tx(transactionId).onceSealed();
   };
+
   //"https://qph.cf2.quoracdn.net/main-qimg-190bef3af6e815401e25f6a97c33df8b-lq",
   return (
     <div className={styles.container}>
@@ -151,11 +155,11 @@ export default function Home() {
 
         <div style={{ margin: "auto", "max-width": "1600px" }}>
           {user && isConnected ? (
-            <Collection re address={getAddress()} />
+            <Collection re address={userAddress} timeStamp={timeStamp} />
           ) : null}
         </div>
         <div style={{ marginTop: "20px" }}>
-          <BuyNFT re address={getAddress()} />
+          <BuyNFT re address={userAddress} setTimeStamp={setTimeStamp} />
         </div>
       </main>
     </div>
