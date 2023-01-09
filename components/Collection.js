@@ -8,7 +8,7 @@ import { sellItem } from "../cadence/transactions/sell_item";
 import * as fcl from "@onflow/fcl";
 import * as types from "@onflow/types";
 
-export const Collection = ({ address, timeStamp }) => {
+export const Collection = ({ address, timeStamp, setShowSpinner }) => {
   let nftOnSaleAux = [];
   const [collection, setCollection] = useState([]);
   const [nftOnSale, setNftOnSale] = useState([]);
@@ -16,96 +16,125 @@ export const Collection = ({ address, timeStamp }) => {
   const [render, setRender] = useState(false);
 
   const getNFTs = async () => {
-    const result = await fcl
-      .send([
-        fcl.script(getNFTsScript),
-        fcl.args([
-          fcl.arg(address, types.Address),
-          fcl.arg(
-            {
-              domain: "public", // public | private | storage
-              identifier: "exampleNFTCollection",
-            },
-            types.Path
-          ),
-        ]),
-      ])
-      .then(fcl.decode);
+    try {
+      setShowSpinner(true);
+      const result = await fcl
+        .send([
+          fcl.script(getNFTsScript),
+          fcl.args([
+            fcl.arg(address, types.Address),
+            fcl.arg(
+              {
+                domain: "public", // public | private | storage
+                identifier: "exampleNFTCollection",
+              },
+              types.Path
+            ),
+          ]),
+        ])
+        .then(fcl.decode);
 
-    setNftDetail([]);
-    setCollection(result);
-    console.log(result);
+      setNftDetail([]);
+      setCollection(result);
+      console.log(result);
+    } catch(err) {
+      alert(err);
+    } finally {
+      setShowSpinner(false);
+    }
   };
 
   const getNFTsonSale = async () => {
-    const result = await fcl
-      .send([
-        fcl.script(readAccountSells),
-        fcl.args([fcl.arg(address, types.Address)]),
-      ])
-      .then(fcl.decode);
-    setNftOnSale(result);
-    nftOnSaleAux = result;
-    console.log(result);
+    try {
+      setShowSpinner(true);
+      const result = await fcl
+        .send([
+          fcl.script(readAccountSells),
+          fcl.args([fcl.arg(address, types.Address)]),
+        ])
+        .then(fcl.decode);
+      setNftOnSale(result);
+      nftOnSaleAux = result;
+      console.log(result);
+    } catch(err) {
+      alert(err);
+    } finally {
+      setShowSpinner(false);
+    }
   };
 
   const getDetailsOfOneNFTOnSale = async (id, userAddress) => {
-    const result = await fcl
-      .send([
-        fcl.script(getDetails),
-        fcl.args([
-          fcl.arg(userAddress, types.Address),
-          fcl.arg(id, types.UInt64),
-        ]),
-      ])
-      .then(fcl.decode);
+    try {
+      setShowSpinner(true);
+      const result = await fcl
+        .send([
+          fcl.script(getDetails),
+          fcl.args([
+            fcl.arg(userAddress, types.Address),
+            fcl.arg(id, types.UInt64),
+          ]),
+        ])
+        .then(fcl.decode);
 
-    if(!nftDetail.find(f => f.nftID == result.nftID)) {
+      if(!nftDetail.find(f => f.nftID == result.nftID)) {
+          nftDetail.push(result);
+      }
+      if (nftDetail.length >= nftOnSale.length) {
+          setRender(true);
+      } else {
+          setRender(false);
+      }
+      /*if (isMyNFTs) {
         nftDetail.push(result);
-    }
-    if (nftDetail.length >= nftOnSale.length) {
-        setRender(true);
-    } else {
-        setRender(false);
-    }
-    /*if (isMyNFTs) {
-      nftDetail.push(result);
-      if (nftDetail.length >= myNftOnSale.length) {
-        setRender(true);
-      }
-    } else {
-      if (new Date(result.expiry * 1000) < new Date()) {
-        nftOnSaleAux = nftOnSaleAux.filter((item) => item != id);
-        if (nftDetail.length >= nftOnSale.length) {
-          setNftOnSale(nftOnSaleAux);
+        if (nftDetail.length >= myNftOnSale.length) {
+          setRender(true);
         }
-      }
-    }*/
+      } else {
+        if (new Date(result.expiry * 1000) < new Date()) {
+          nftOnSaleAux = nftOnSaleAux.filter((item) => item != id);
+          if (nftDetail.length >= nftOnSale.length) {
+            setNftOnSale(nftOnSaleAux);
+          }
+        }
+      }*/
 
-    console.log("NFT details:", result);
+      console.log("NFT details:", result);
+    } catch(err) {
+      alert(err);
+    } finally {
+      setShowSpinner(false);
+    }
   };
 
   const sellNFT = async (id) => {
-    const transactionId = await fcl
-      .send([
-        fcl.transaction(sellItem),
-        fcl.args([
-          fcl.arg(id, types.UInt64),
-          fcl.arg("100.0", types.UFix64),
-          fcl.arg("1", types.String),
-          fcl.arg("10.0", types.UFix64),
-        ]),
-        fcl.payer(fcl.authz),
-        fcl.authorizations([fcl.authz]),
-        fcl.proposer(fcl.authz),
-        fcl.limit(9999),
-      ])
-      .then(fcl.decode);
+    try {
+      setShowSpinner(true);
+      const transactionId = await fcl
+        .send([
+          fcl.transaction(sellItem),
+          fcl.args([
+            fcl.arg(id, types.UInt64),
+            fcl.arg("100.0", types.UFix64),
+            fcl.arg("1", types.String),
+            fcl.arg("10.0", types.UFix64),
+          ]),
+          fcl.payer(fcl.authz),
+          fcl.authorizations([fcl.authz]),
+          fcl.proposer(fcl.authz),
+          fcl.limit(9999),
+        ])
+        .then(fcl.decode);
 
-    console.log(transactionId);
+      console.log(transactionId);
 
-    await fcl.tx(transactionId).onceSealed();
-    getNFTs();
+      await fcl.tx(transactionId).onceSealed();
+    } catch(err) {
+      alert(err);
+    } finally {
+      setShowSpinner(false);
+    }
+
+    await getNFTs();
   };
 
   useEffect(() => {

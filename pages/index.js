@@ -1,11 +1,12 @@
 import Head from "next/head";
-import { useEffect, useState } from "react";
+import { React, useEffect, useState } from "react";
 import { mintNFT } from "../cadence/transactions/mint_nft";
 import { setupAccount } from "../cadence/transactions/setup_account";
 import { setupCollection } from "../cadence/transactions/setup_collection";
 import { BuyNFT } from "../components/buyNFT";
 import { Collection } from "../components/Collection";
 import styles from "../styles/Home.module.css";
+import { Blocks } from "react-loader-spinner";
 
 import * as fcl from "@onflow/fcl";
 import * as types from "@onflow/types";
@@ -19,6 +20,7 @@ export default function Home() {
   const [isConnected, setIsConnected] = useState(false);
   const [userAddress, setUserAddress] = useState(null);
   const [timeStamp, setTimeStamp] = useState(null);
+  const [showSpinner, setShowSpinner] = useState(false);
   const [user, setUser] = useState(null);
   const login = () => {
     if (fcl.currentUser()) {
@@ -44,60 +46,83 @@ export default function Home() {
   }, [user]);
 
   const mintNFTFunction = async () => {
-    const transactionId = await fcl
-      .send([
-        fcl.transaction(mintNFT),
-        fcl.args([
-          fcl.arg(user.addr, types.Address),
-          fcl.arg("Test NFT", types.String),
-          fcl.arg("This is a test NFT", types.String),
-          fcl.arg(
-            "https://static.wikia.nocookie.net/onepiece/images/a/af/Monkey_D._Luffy_Anime_Dos_A%C3%B1os_Despu%C3%A9s_Infobox.png/revision/latest?cb=20200616015904&path-prefix=es",
-            types.String
-          ),
-        ]),
-        fcl.payer(fcl.authz),
-        fcl.authorizations([fcl.authz]),
-        fcl.proposer(fcl.authz),
-        fcl.limit(9999),
-      ])
-      .then(fcl.decode);
+    try {
+      setShowSpinner(true);
+      const transactionId = await fcl
+        .send([
+          fcl.transaction(mintNFT),
+          fcl.args([
+            fcl.arg(user.addr, types.Address),
+            fcl.arg("Test NFT", types.String),
+            fcl.arg("This is a test NFT", types.String),
+            fcl.arg(
+              "https://static.wikia.nocookie.net/onepiece/images/a/af/Monkey_D._Luffy_Anime_Dos_A%C3%B1os_Despu%C3%A9s_Infobox.png/revision/latest?cb=20200616015904&path-prefix=es",
+              types.String
+            ),
+          ]),
+          fcl.payer(fcl.authz),
+          fcl.authorizations([fcl.authz]),
+          fcl.proposer(fcl.authz),
+          fcl.limit(9999),
+        ])
+        .then(fcl.decode);
 
-    console.log(transactionId);
+      console.log(transactionId);
 
-    await fcl.tx(transactionId).onceSealed();
+      await fcl.tx(transactionId).onceSealed();
+    } catch(err) {
+      alert(err);
+    } finally {
+      setShowSpinner(false);
+    }
+    
     setTimeStamp(Date.now());
   };
 
   const setupAccountFunction = async () => {
-    const transactionId = await fcl
-      .send([
-        fcl.transaction(setupAccount),
-        fcl.payer(fcl.authz),
-        fcl.authorizations([fcl.authz]),
-        fcl.proposer(fcl.authz),
-        fcl.limit(9999),
-      ])
-      .then(fcl.decode);
+    try {
+      setShowSpinner(true);
+      const transactionId = await fcl
+        .send([
+          fcl.transaction(setupAccount),
+          fcl.payer(fcl.authz),
+          fcl.authorizations([fcl.authz]),
+          fcl.proposer(fcl.authz),
+          fcl.limit(9999),
+        ])
+        .then(fcl.decode);
 
-    console.log(transactionId);
+      console.log(transactionId);
 
-    return fcl.tx(transactionId).onceSealed();
+      await fcl.tx(transactionId).onceSealed();
+    } catch(err) {
+      alert(err);
+    } finally {
+      setShowSpinner(false);
+    }
   };
+
   const setupCollectionFunction = async () => {
-    const transactionId = await fcl
-      .send([
-        fcl.transaction(setupCollection),
-        fcl.payer(fcl.authz),
-        fcl.authorizations([fcl.authz]),
-        fcl.proposer(fcl.authz),
-        fcl.limit(9999),
-      ])
-      .then(fcl.decode);
+    try {
+      setShowSpinner(true);
+      const transactionId = await fcl
+        .send([
+          fcl.transaction(setupCollection),
+          fcl.payer(fcl.authz),
+          fcl.authorizations([fcl.authz]),
+          fcl.proposer(fcl.authz),
+          fcl.limit(9999),
+        ])
+        .then(fcl.decode);
 
-    console.log(transactionId);
+      console.log(transactionId);
 
-    return fcl.tx(transactionId).onceSealed();
+      await fcl.tx(transactionId).onceSealed();
+    } catch(err) {
+      alert(err);
+    } finally {
+      setShowSpinner(false);
+    }
   };
 
   //"https://qph.cf2.quoracdn.net/main-qimg-190bef3af6e815401e25f6a97c33df8b-lq",
@@ -155,13 +180,27 @@ export default function Home() {
 
         <div style={{ margin: "auto", "max-width": "1600px" }}>
           {user && isConnected ? (
-            <Collection re address={userAddress} timeStamp={timeStamp} />
+            <Collection re address={userAddress} timeStamp={timeStamp} setShowSpinner={setShowSpinner} />
           ) : null}
         </div>
         <div style={{ marginTop: "20px" }}>
-          <BuyNFT re address={userAddress} setTimeStamp={setTimeStamp} />
+          <BuyNFT re address={userAddress} setTimeStamp={setTimeStamp} setShowSpinner={setShowSpinner} />
         </div>
       </main>
+      {showSpinner ? (
+        <div style={{ position: "absolute", backgroundColor: "#ffffff21", width: "100%", height: "100%", top: "0" }}>
+          <div style={{ position: "absolute", left: "50%", top: "50%" }}>
+            <Blocks
+              visible={showSpinner}
+              height="80"
+              width="80"
+              ariaLabel="blocks-loading"
+              wrapperStyle={{}}
+              wrapperClass="blocks-wrapper"
+            />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
