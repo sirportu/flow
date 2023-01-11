@@ -3,12 +3,12 @@ export const BuyItemFromMarketPlace = `
 import FlowToken from 0x7e60df042a9c0868
 import FungibleToken from 0x9a0766d93b6608b7
 import NonFungibleToken from 0x631e88ae7f1d7c20
-import ExampleNFT from 0xdf202fd6391aaf5d
+import PiratesOfTheMetaverse from 0xc97017ed85e496bf
 import NFTStorefrontV2 from 0xdf202fd6391aaf5d
 
 transaction(listingResourceID: UInt64, storefrontAddress: Address, commissionRecipient: Address?) {
     let pvault: @FungibleToken.Vault
-    let ExampleNFTCollection: &ExampleNFT.Collection{NonFungibleToken.Receiver}
+    let PiratesOfTheMetaverseCollection: &PiratesOfTheMetaverse.Collection{NonFungibleToken.Receiver}
     let market: &NFTStorefrontV2.Storefront{NFTStorefrontV2.StorefrontPublic}
     let listing: &NFTStorefrontV2.Listing{NFTStorefrontV2.ListingPublic}
     var CRC: Capability<&{FungibleToken.Receiver}>?
@@ -30,8 +30,8 @@ transaction(listingResourceID: UInt64, storefrontAddress: Address, commissionRec
             ?? panic("Cannot borrow FlowToken vault from acct storage")
         self.pvault <- mainFlowVault.withdraw(amount: price)
 
-        self.ExampleNFTCollection = acct.borrow<&ExampleNFT.Collection{NonFungibleToken.Receiver}>(
-            from: ExampleNFT.CollectionStoragePath
+        self.PiratesOfTheMetaverseCollection = acct.borrow<&PiratesOfTheMetaverse.Collection{NonFungibleToken.Receiver}>(
+            from: PiratesOfTheMetaverse.CollectionStoragePath
         ) ?? panic("Cannot borrow NFT collection receiver from account")
 
         let commissionAmount = self.listing.getDetails().commissionAmount
@@ -52,7 +52,7 @@ transaction(listingResourceID: UInt64, storefrontAddress: Address, commissionRec
             payment: <-self.pvault,
             commissionRecipient: self.CRC
         )
-        self.ExampleNFTCollection.deposit(token: <-item)
+        self.PiratesOfTheMetaverseCollection.deposit(token: <-item)
         log("bought nft")
     }
 }
