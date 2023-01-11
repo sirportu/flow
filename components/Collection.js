@@ -2,6 +2,8 @@ import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { getDetails } from "../cadence/scripts/getDetails";
 import { getNFTsScript } from "../cadence/scripts/getNFTs";
+import { getTotalSupply } from "../cadence/scripts/getTotalSupply";
+import { getPublicPath } from "../cadence/scripts/getPublicPath";
 import { readAccountSells } from "../cadence/scripts/ReadAccountSells";
 import { sellItem } from "../cadence/transactions/sell_item";
 
@@ -22,14 +24,7 @@ export const Collection = ({ address, timeStamp, setShowSpinner }) => {
         .send([
           fcl.script(getNFTsScript),
           fcl.args([
-            fcl.arg(address, types.Address),
-            fcl.arg(
-              {
-                domain: "public", // public | private | storage
-                identifier: "exampleNFTCollection",
-              },
-              types.Path
-            ),
+            fcl.arg(address, types.Address)
           ]),
         ])
         .then(fcl.decode);
@@ -37,8 +32,39 @@ export const Collection = ({ address, timeStamp, setShowSpinner }) => {
       setNftDetail([]);
       setCollection(result);
       console.log(result);
-    } catch(err) {
-      alert(err);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setShowSpinner(false);
+    }
+  };
+  const getTotalSupplyNFTs = async () => {
+    try {
+      setShowSpinner(true);
+      const result = await fcl
+        .send([
+          fcl.script(getTotalSupply),
+        ])
+        .then(fcl.decode);
+      console.log("totalSupply", result);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setShowSpinner(false);
+    }
+  };
+
+  const getCollectionPublicPath = async () => {
+    try {
+      setShowSpinner(true);
+      const result = await fcl
+        .send([
+          fcl.script(getPublicPath),
+        ])
+        .then(fcl.decode);
+      console.log("pp", result);
+    } catch (err) {
+      console.log(err);
     } finally {
       setShowSpinner(false);
     }
@@ -56,7 +82,7 @@ export const Collection = ({ address, timeStamp, setShowSpinner }) => {
       setNftOnSale(result);
       nftOnSaleAux = result;
       console.log(result);
-    } catch(err) {
+    } catch (err) {
       alert(err);
     } finally {
       setShowSpinner(false);
@@ -76,13 +102,13 @@ export const Collection = ({ address, timeStamp, setShowSpinner }) => {
         ])
         .then(fcl.decode);
 
-      if(!nftDetail.find(f => f.nftID == result.nftID)) {
-          nftDetail.push(result);
+      if (!nftDetail.find(f => f.nftID == result.nftID)) {
+        nftDetail.push(result);
       }
       if (nftDetail.length >= nftOnSale.length) {
-          setRender(true);
+        setRender(true);
       } else {
-          setRender(false);
+        setRender(false);
       }
       /*if (isMyNFTs) {
         nftDetail.push(result);
@@ -99,7 +125,7 @@ export const Collection = ({ address, timeStamp, setShowSpinner }) => {
       }*/
 
       console.log("NFT details:", result);
-    } catch(err) {
+    } catch (err) {
       alert(err);
     } finally {
       setShowSpinner(false);
@@ -128,7 +154,7 @@ export const Collection = ({ address, timeStamp, setShowSpinner }) => {
       console.log(transactionId);
 
       await fcl.tx(transactionId).onceSealed();
-    } catch(err) {
+    } catch (err) {
       alert(err);
     } finally {
       setShowSpinner(false);
@@ -139,13 +165,17 @@ export const Collection = ({ address, timeStamp, setShowSpinner }) => {
 
   useEffect(() => {
     if (address) {
+      getTotalSupplyNFTs();
       getNFTs();
+      getCollectionPublicPath();
     }
   }, [address]);
 
   useEffect(() => {
     if (address && timeStamp) {
+      getTotalSupply();
       getNFTs();
+      getCollectionPublicPath();
     }
   }, [timeStamp]);
 
@@ -182,44 +212,44 @@ export const Collection = ({ address, timeStamp, setShowSpinner }) => {
       >
         {collection && address && collection.length
           ? collection.map((nft, index) => (
+            <div
+              key={index}
+              id={nft}
+              style={{
+                width: "250px",
+                height: "250px",
+                position: "relative",
+                background: "#c3c3c3",
+                borderRadius: "5px",
+              }}
+            >
+              <Image src={"/placeholder.png"} fill alt="placeholder" />
               <div
-                key={index}
-                id={nft}
                 style={{
-                  width: "250px",
-                  height: "250px",
-                  position: "relative",
-                  background: "#c3c3c3",
-                  borderRadius: "5px",
+                  position: "absolute",
+                  width: "100%",
+                  bottom: "0",
+                  left: "0",
                 }}
               >
-                <Image src={"/placeholder.png"} fill alt="placeholder" />
-                <div
-                  style={{
-                    position: "absolute",
-                    width: "100%",
-                    bottom: "0",
-                    left: "0",
-                  }}
-                >
-                  {nftOnSale.length == 0 ||
+                {nftOnSale.length == 0 ||
                   (render && RenderSell(nft).status) ? (
-                    <button
-                      onClick={() => sellNFT(nft)}
-                      style={{
-                        width: "100%",
-                        color: "white",
-                        padding: "10px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      {" "}
-                      Sell NFT ({nft}){" "}
-                    </button>
-                  ) : null}
-                </div>
+                  <button
+                    onClick={() => sellNFT(nft)}
+                    style={{
+                      width: "100%",
+                      color: "white",
+                      padding: "10px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {" "}
+                    Sell NFT ({nft}){" "}
+                  </button>
+                ) : null}
               </div>
-            ))
+            </div>
+          ))
           : null}
       </div>
       <button

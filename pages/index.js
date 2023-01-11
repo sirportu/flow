@@ -45,39 +45,39 @@ export default function Home() {
     }
   }, [user]);
 
-  const mintNFTFunction = async () => {
-    try {
-      setShowSpinner(true);
-      const transactionId = await fcl
-        .send([
-          fcl.transaction(mintNFT),
-          fcl.args([
-            fcl.arg(user.addr, types.Address),
-            fcl.arg("Test NFT", types.String),
-            fcl.arg("This is a test NFT", types.String),
-            fcl.arg(
-              "https://static.wikia.nocookie.net/onepiece/images/a/af/Monkey_D._Luffy_Anime_Dos_A%C3%B1os_Despu%C3%A9s_Infobox.png/revision/latest?cb=20200616015904&path-prefix=es",
-              types.String
-            ),
-          ]),
-          fcl.payer(fcl.authz),
-          fcl.authorizations([fcl.authz]),
-          fcl.proposer(fcl.authz),
-          fcl.limit(9999),
-        ])
-        .then(fcl.decode);
+  // const mintNFTFunction = async () => {
+  //   try {
+  //     setShowSpinner(true);
+  //     const transactionId = await fcl
+  //       .send([
+  //         fcl.transaction(mintNFT),
+  //         fcl.args([
+  //           fcl.arg(user.addr, types.Address),
+  //           fcl.arg("Test NFT", types.String),
+  //           fcl.arg("This is a test NFT", types.String),
+  //           fcl.arg(
+  //             "https://static.wikia.nocookie.net/onepiece/images/a/af/Monkey_D._Luffy_Anime_Dos_A%C3%B1os_Despu%C3%A9s_Infobox.png/revision/latest?cb=20200616015904&path-prefix=es",
+  //             types.String
+  //           ),
+  //         ]),
+  //         fcl.payer(fcl.authz),
+  //         fcl.authorizations([fcl.authz]),
+  //         fcl.proposer(fcl.authz),
+  //         fcl.limit(9999),
+  //       ])
+  //       .then(fcl.decode);
 
-      console.log(transactionId);
+  //     console.log(transactionId);
 
-      await fcl.tx(transactionId).onceSealed();
-    } catch(err) {
-      alert(err);
-    } finally {
-      setShowSpinner(false);
-    }
-    
-    setTimeStamp(Date.now());
-  };
+  //     await fcl.tx(transactionId).onceSealed();
+  //   } catch(err) {
+  //     alert(err);
+  //   } finally {
+  //     setShowSpinner(false);
+  //   }
+
+  //   setTimeStamp(Date.now());
+  // };
 
   const setupAccountFunction = async () => {
     try {
@@ -95,7 +95,7 @@ export default function Home() {
       console.log(transactionId);
 
       await fcl.tx(transactionId).onceSealed();
-    } catch(err) {
+    } catch (err) {
       alert(err);
     } finally {
       setShowSpinner(false);
@@ -118,7 +118,7 @@ export default function Home() {
       console.log(transactionId);
 
       await fcl.tx(transactionId).onceSealed();
-    } catch(err) {
+    } catch (err) {
       alert(err);
     } finally {
       setShowSpinner(false);
@@ -172,11 +172,11 @@ export default function Home() {
             setupCollection
           </button>
         </div>
-        <div style={{ display: "flex", gap: "10px", paddingTop: "20px" }}>
+        {/* <div style={{ display: "flex", gap: "10px", paddingTop: "20px" }}>
           <button disabled={!isConnected} onClick={() => mintNFTFunction()}>
             mintNFT
           </button>
-        </div>
+        </div> */}
 
         <div style={{ margin: "auto", "max-width": "1600px" }}>
           {user && isConnected ? (
