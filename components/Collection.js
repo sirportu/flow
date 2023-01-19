@@ -24,7 +24,7 @@ export const Collection = ({ address, timeStamp, setShowSpinner }) => {
         .send([
           fcl.script(getNFTsScript),
           fcl.args([
-            fcl.arg(address, types.Address)
+            fcl.arg("0xb1bc33659bb2508e", types.Address)
           ]),
         ])
         .then(fcl.decode);
